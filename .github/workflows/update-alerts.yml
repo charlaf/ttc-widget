@@ -1,0 +1,48 @@
+name: Update TTC subway alerts
+
+on:
+  schedule:
+    # Runs every 10 minutes. GitHub cron is UTC; the minimum interval is 5 min,
+    # but scheduled runs are best-effort and can be delayed under load.
+    - cron: "*/10 * * * *"
+  workflow_dispatch: {}   # lets you trigger a run manually from the Actions tab
+
+# Allow the workflow to commit the refreshed alerts.json back to the repo
+permissions:
+  contents: write
+
+# If a run is still going when the next fires, skip rather than pile up
+concurrency:
+  group: update-alerts
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm ci || npm install
+
+      - name: Fetch and decode alerts
+        run: node scripts/fetch-alerts.js
+
+      - name: Commit if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          # Only commit when the data actually changed, to avoid empty commits
+          if ! git diff --quiet -- alerts.json; then
+            git add alerts.json
+            git commit -m "Update TTC alerts ($(date -u +'%Y-%m-%dT%H:%MZ'))"
+            git push
+          else
+            echo "No change in alerts.json; nothing to commit."
+          fi
