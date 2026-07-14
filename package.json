@@ -1,0 +1,13 @@
+{
+  "name": "ttc-subway-alerts-widget",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Fetches TTC GTFS-realtime alerts, filters to subway/LRT, and serves a Notion-embeddable widget.",
+  "type": "commonjs",
+  "scripts": {
+    "fetch": "node scripts/fetch-alerts.js"
+  },
+  "dependencies": {
+    "gtfs-realtime-bindings": "^1.1.1"
+  }
+}
