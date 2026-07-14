@@ -39,10 +39,17 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           # Only commit when the data actually changed, to avoid empty commits
-          if ! git diff --quiet -- alerts.json; then
-            git add alerts.json
-            git commit -m "Update TTC alerts ($(date -u +'%Y-%m-%dT%H:%MZ'))"
-            git push
-          else
+          if git diff --quiet -- alerts.json; then
             echo "No change in alerts.json; nothing to commit."
+            exit 0
           fi
+          git add alerts.json
+          git commit -m "Update TTC alerts ($(date -u +'%Y-%m-%dT%H:%MZ'))"
+          # Rebase on top of any commits pushed by an earlier/overlapping run,
+          # then push. Retry once if we still lose a race.
+          git pull --rebase origin ${{ github.ref_name }} || true
+          git push origin HEAD:${{ github.ref_name }} || {
+            echo "Push rejected, retrying after rebase..."
+            git pull --rebase origin ${{ github.ref_name }}
+            git push origin HEAD:${{ github.ref_name }}
+          }
