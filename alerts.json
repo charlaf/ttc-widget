@@ -1,9 +1,10 @@
 {
-  "updatedAt": "2026-10-02T06:18:50.837Z",
+  "updatedAt": "2026-10-02T12:53:30.022Z",
   "feedTimestamp": "2026-10-02T06:18:44.000Z",
   "windowDays": 7,
   "count": 0,
   "plannedCount": 0,
   "alerts": [],
-  "planned": []
+  "planned": [],
+  "fetchError": "fetch failed"
 }
